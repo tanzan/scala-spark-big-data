@@ -2,7 +2,6 @@ package wikipedia
 
 import org.apache.spark.SparkConf
 import org.apache.spark.SparkContext
-import org.apache.spark.rdd.PairRDDFunctions
 
 import org.apache.spark.rdd.RDD
 
@@ -30,7 +29,7 @@ object WikipediaRanking {
    *  Hint2: consider using method `mentionsLanguage` on `WikipediaArticle`
    */
   def occurrencesOfLang(lang: String, rdd: RDD[WikipediaArticle]): Int =
-    rdd.map(article => if (article.text.contains(lang)) 1 else 0).fold(0)(_ + _)
+    rdd.map(article => if (article.mentionsLanguage(lang)) 1 else 0).fold(0)(_ + _)
 
   /* (1) Use `occurrencesOfLang` to compute the ranking of the languages
    *     (`val langs`) by determining the number of Wikipedia articles that
@@ -49,7 +48,7 @@ object WikipediaRanking {
   def makeIndex(langs: List[String], rdd: RDD[WikipediaArticle]): RDD[(String, Iterable[WikipediaArticle])] =
     (for{
       article <- rdd
-      lang <- langs if (article.text.contains(lang))
+      lang <- langs if (article.mentionsLanguage(lang))
     } yield (lang, article)).groupByKey()
 
   /* (2) Compute the language ranking again, but now using the inverted index. Can you notice
@@ -71,7 +70,7 @@ object WikipediaRanking {
   def rankLangsReduceByKey(langs: List[String], rdd: RDD[WikipediaArticle]): List[(String, Int)] =
     (for{
       article <- rdd
-      lang <- langs if (article.text.contains(lang))
+      lang <- langs if (article.mentionsLanguage(lang))
     } yield (lang, 1)).reduceByKey(_ + _).collect().sortWith(_._2 > _._2).toList
 
 
