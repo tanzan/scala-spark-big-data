@@ -98,8 +98,11 @@ class StackOverflow extends Serializable {
           }
       highScore
     }
+    grouped.map{ case (_, postings) =>
+      val arr = postings.toArray
+      (arr.head._1, answerHighScore(arr.tail.map(_._2)))
+    }
 
-    ???
   }
 
 
